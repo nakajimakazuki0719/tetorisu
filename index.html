@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="pura6.css">
+  <title>Document</title>
+</head>
+<body>
+  <canvas id = "canvas" width = "600" height = "600" style = "background-color: black"></canvas>
+<script>
+ let CANVAS_WIDTH	= 600; // Canvasの幅
+let CANVAS_HEIGHT	= 600; // Canvasの高さ
+
+let SCENE_TITLE		= 0;
+let SCENE_GAME		= 1;
+
+let FIELD_X			= 40; // フィールドのCanvas内のX座標
+let FIELD_Y			= 40; // フィールドのCanvas内のY座標
+
+let FIELD_WIDTH		= 12; // フィールドの幅
+let FIELD_HEIGHT	= 22; // フィールドの高さ
+
+let BLOCK_WIDTH		= 4; // ブロックの領域幅
+let BLOCK_HEIGHT	= 4; // ブロックの領域高さ
+
+let BLOCK_RED_SCORE	= 31; // 赤ブロックのスコア
+let BLOCK_BLU_SCORE	= 5; // 青ブロックのスコア
+let BLOCK_GRE_SCORE	= 10;// 緑ブロックのスコア
+let BLOCK_YEL_SCORE	= 15;// 黄ブロックのスコア
+
+let BLOCK_RED_COLOR	= "rgba(255, 100, 100, 1.0)";
+let BLOCK_BLU_COLOR	= "rgba(100, 100, 255, 1.0)";
+let BLOCK_GRE_COLOR	= "rgba(100, 255, 100, 1.0)";
+let BLOCK_YEL_COLOR	= "rgba(255, 255, 100, 1.0)";
+
+let NEXT_FIELD_X	= CANVAS_WIDTH - 200;
+let NEXT_FIELD_Y	= FIELD_Y;
+
+let SCORE_PAIN_X	= NEXT_FIELD_X;
+let SCORE_PAIN_Y	= CANVAS_HEIGHT / 2;
+
+let KEY_RIGHT		= 0; // 右キー
+let KEY_LEFT		= 1; // 左キー
+let KEY_UP			= 2; // 上キー
+let KEY_DOWN		= 3; // 下キー
+
+let block = [ // ブロックの定義
+[	//	block type 0
+	[
+		[0, 0, 0, 0,],
+		[0, 1, 1, 0,],
+		[0, 1, 1, 0,],
+		[0, 0, 0, 0,],
+	],
+	[
+		[0, 0, 0, 0,],
+		[0, 1, 1, 0,],
+		[0, 1, 1, 0,],
+		[0, 0, 0, 0,],
+	],
+	[
+		[0, 0, 0, 0,],
+		[0, 1, 1, 0,],
+		[0, 1, 1, 0,],
+		[0, 0, 0, 0,],
+	],
+	[
+		[0, 0, 0, 0,],
+		[0, 1, 1, 0,],
+		[0, 1, 1, 0,],
+		[0, 0, 0, 0,],
+	],
+],
+
+[	//	block type 1
+	[
+		[0, 0, 0, 0,],
+		[1, 1, 1, 1,],
+		[0, 0, 0, 0,],
+		[0, 0, 0, 0,],
+	],
+	[
+		[0, 0, 1, 0,],
+		[0, 0, 1, 0,],
+		[0, 0, 1, 0,],
+		[0, 0, 1, 0,],
+	],
+	[
+		[0, 0, 0, 0,],
+		[1, 1, 1, 1,],
+		[0, 0, 0, 0,],
+		[0, 0, 0, 0,],
+	],
+	[
+		[0, 0, 1, 0,],
+		[0, 0, 1, 0,],
+		[0, 0, 1, 0,],
+		[0, 0, 1, 0,],
+	],
+],
+
+[	//	block type 2
+	[
+		[0, 0, 0, 0,],
+		[0, 0, 1, 1,],
+		[0, 1, 1, 0,],
+		[0, 0, 0, 0,],
+	],
+	[
+		[0, 1, 0, 0,],
+		[0, 1, 1, 0,],
+		[0, 0, 1, 0,],
+		[0, 0, 0, 0,],
+	],
+	[
+		[0, 0, 0, 0,],
+		[0, 0, 1, 1,],
+		[0, 1, 1, 0,],
+		[0, 0, 0, 0,],
+	],
+	[
+		[0, 1, 0, 0,],
+		[0, 1, 1, 0,],
+		[0, 0, 1, 0,],
+		[0, 0, 0, 0,],
+	],
+],
+
+[	//	block type 3
+	[
+		[0, 0, 0, 0,],
+		[1, 1, 0, 0,],
+		[0, 1, 1, 0,],
+		[0, 0, 0, 0,],
+	],
+	
+	[
+		[0, 0, 1, 0,],
+		[0, 1, 1, 0,],
+		[0, 1, 0, 0,],
+		[0, 0, 0, 0,],
+	],
+	
+	[
+		[0, 0, 0, 0,],
+		[1, 1, 0, 0,],
+		[0, 1, 1, 0,],
+		[0, 0, 0, 0,],
+	],
+	
+	[
+		[0, 0, 1, 0,],
+		[0, 1, 1, 0,],
+		[0, 1, 0, 0,],
+		[0, 0, 0, 0,],
+	],
+
+],
+
+[	//	block type 4
+	[
+		[0, 0, 0, 0,],
+		[0, 1, 0, 0,],
+		[0, 1, 1, 1,],
+		[0, 0, 0, 0,],
+	],
+	[
+		[0, 1, 1, 0,],
+		[0, 1, 0, 0,],
+		[0, 1, 0, 0,],
+		[0, 0, 0, 0,],
+	],
+	[
+		[0, 0, 0, 0,],
+		[1, 1, 1, 0,],
+		[0, 0, 1, 0,],
+		[0, 0, 0, 0,],
+	],
+	[
+		[0, 0, 1, 0,],
+		[0, 0, 1, 0,],
+		[0, 1, 1, 0,],
+		[0, 0, 0, 0,],
+	],
+],
+
+[	//	block type 5
+	[
+		[0, 0, 0, 0,],
+		[0, 0, 1, 0,],
+		[1, 1, 1, 0,],
+		[0, 0, 0, 0,],
+	],
+	[
+		[0, 1, 0, 0,],
+		[0, 1, 0, 0,],
+		[0, 1, 1, 0,],
+		[0, 0, 0, 0,],
+	],
+	[
+		[0, 0, 0, 0,],
+		[0, 1, 1, 1,],
+		[0, 1, 0, 0,],
+		[0, 0, 0, 0,],
+	],
+	[
+		[0, 1, 1, 0,],
+		[0, 0, 1, 0,],
+		[0, 0, 1, 0,],
+		[0, 0, 0, 0,],
+	],
+],
+
+[	//	block type 6
+	[
+		[0, 0, 0, 0,],
+		[0, 1, 1, 1,],
+		[0, 0, 1, 0,],
+		[0, 0, 0, 0,],
+	],
+	[
+		[0, 0, 1, 0,],
+		[0, 1, 1, 0,],
+		[0, 0, 1, 0,],
+		[0, 0, 0, 0,],
+	],
+	[
+		[0, 0, 0, 0,],
+		[0, 0, 1, 0,],
+		[0, 1, 1, 1,],
+		[0, 0, 0, 0,],
+	],
+	[
+		[0, 1, 0, 0,],
+		[0, 1, 1, 0,],
+		[0, 1, 0, 0,],
+		[0, 0, 0, 0,],
+	],
+],
+];
+
+var field; // Fieldの内容
+
+var key = Array(4); // キー判定用変数
+key[KEY_RIGHT]	= 0;
+key[KEY_LEFT]	= 0;
+key[KEY_UP]		= 0;
+key[KEY_DOWN]	= 0;
+var canvas = document.getElementById("canvas"); // Canvasを取得
+var context = canvas.getContext("2d"); // コンテキストの取得
+var cnt; // カウンタ
+var bx, by, bflag, btype, brot, bcolor, nbtype, nbrot, nbcolor;
+var dropflag, gameoverflag, spd, spdupflag;
+var delflag; // ブロック行削除フラグ
+var score; // スコア
+var bestscore = -1; // 最高スコア
+var delnum; // 削除ブロックの各色個数
+var scene; // 場面切り替え用
+
+
+//	初期化関数
+function init() {
+	field = [ // Fieldの内容
+	[9, 9, 9, 0, 0, 0, 0, 0, 0, 9, 9, 9,],
+	[9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9,],
+	[9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9,],
+	[9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9,],
+	[9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9,],
+	[9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9,],
+	[9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9,],
+	[9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9,],
+	[9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9,],
+	[9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9,],
+	[9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9,],
+	[9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9,],
+	[9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9,],
+	[9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9,],
+	[9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9,],
+	[9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9,],
+	[9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9,],
+	[9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9,],
+	[9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9,],
+	[9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9,],
+	[9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9,],
+	[9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9,],
+	];
+	
+	cnt = 1;
+	
+	bx = 4;	//	落下ブロックのX座標
+	by = -4;	//	落下ブロックのY座標
+	bflag = false;	//	落下ブロックの着地フラグ
+	btype = Math.floor(Math.random() * 7);	//	落下ブロックの種類
+	brot = Math.floor(Math.random() * 4);	//	落下ブロックの回転種類
+	bcolor = Math.floor(Math.random() * 4) + 1; // ブロックの色
+	nbtype = Math.floor(Math.random() * 7); // Nextブロックの種類
+	nbrot = Math.floor(Math.random() * 4); // Nextブロックの回転種類
+	nbcolor = Math.floor(Math.random() * 4) + 1; // Nextブロックの色
+	
+	dropflag = false;	//	ブロック行削除後の落下フラグ
+	gameoverflag = false;	//	ゲームオーバーフラグ
+	spd = 30; // 落下間隔
+	spdupflag = false;
+	
+	delflag = Array(FIELD_HEIGHT); // ブロック行削除フラグ
+	delnum = Array(4); // 削除ブロックの各色個数
+	for(var i = 0;i < FIELD_HEIGHT;i++) delflag[i] = false;
+	for(var i = 0;i < 4;i++) delnum[i] = 0;
+	
+	score = 0; // スコア
+	
+	scene = SCENE_TITLE;
+}
+
+//	キー操作関数
+function keyCtrl() {
+	if(by < -ctrlJudge()) return; // フィールドをはみ出していたら処理しない
+	
+	if(key[KEY_RIGHT] <= 1 && key[KEY_LEFT] <= 1) {
+		bx += key[KEY_RIGHT] - key[KEY_LEFT];
+		
+		var breakflag = false;
+		for(var i = 0;i < BLOCK_HEIGHT;i++) {
+			for(var j = 0;j < BLOCK_WIDTH;j++) {
+				if(bx + j < 0 || bx + j >= FIELD_WIDTH ||
+					by + i < 0 || by + i >= FIELD_HEIGHT) continue;
+				
+				if(field[by + i][bx + j] != 0 && block[btype][brot][i][j] == 1) {
+					bx -= key[KEY_RIGHT] - key[KEY_LEFT];
+					breakflag = true;
+					break;
+				}
+			}
+			if(breakflag) break;
+		}
+		if(key[KEY_RIGHT] == 1) key[KEY_RIGHT]++;
+		else if(key[KEY_LEFT] == 1) key[KEY_LEFT]++;
+	}
+	
+	if(key[KEY_DOWN] <= 1 && key[KEY_UP] <= 1) {
+		brot += key[KEY_DOWN] - key[KEY_UP];
+		if(brot < 0) brot = 3;
+		else if(brot > 3) brot = 0;
+		
+		var breakflag = false;
+		for(var i = 0;i < BLOCK_HEIGHT;i++) {
+			for(var j = 0;j < BLOCK_WIDTH;j++) {
+				if(bx + j < 0 || bx + j >= FIELD_WIDTH ||
+						by + i < 0 || by + i >= FIELD_HEIGHT) continue;
+				
+				if((field[by + i][bx + j] != 0 && block[btype][brot][i][j] == 1) ||
+					(block[btype][brot][i][j] == 1 && by + i < 0)) {
+					brot -= key[KEY_DOWN] - key[KEY_UP];
+					if(brot < 0) brot = 3;
+					else if(brot > 3) brot = 0;
+					breakflag = true;
+					break;
+				}
+			}
+			if(breakflag) break;
+		}
+		
+		if(key[KEY_DOWN] == 1) key[KEY_DOWN]++;
+		else if(key[KEY_UP] == 1) key[KEY_UP]++;
+	}
+}
+
+//	キー操作「可能・不可能」判定
+function ctrlJudge() {
+	var num, breakflag = false;
+	for(var i = 0;i < BLOCK_HEIGHT;i++) {
+		for(var j = 0;j < BLOCK_WIDTH;j++) {
+			if(block[btype][brot][i][j] == 1) {
+				num = i;
+				breakflag = true;
+			}
+		}
+		if(breakflag) break;
+	}
+	return num;
+}
+
+//	更新関数
+function update() {
+	if(cnt % Math.floor(spd) == 0 || (spdupflag && cnt % 4 == 0)) {
+		if(dropflag) {
+			var num = 0;
+			
+			for(var i = FIELD_HEIGHT - 2;i > 0;i--) {
+				if(rowJudge(i)) {
+					num = i;
+					break;
+				}
+			}
+			
+			for(var i = num;i > 1;i--) {
+				for(var j = 1;j < FIELD_WIDTH -1;j++) {
+					field[i][j] = field[i - 1][j];
+				}
+			}
+			for(var i = 1;i < FIELD_WIDTH - 1;i++) {
+				field[1][i] = 0;
+			}
+			
+			var flag = false;
+			
+			for(var i = FIELD_HEIGHT - 2;i > 0;i--) {
+				if(rowJudge(i)) {
+					flag = true;
+					num = i;
+					break;
+				}
+			}
+			
+			if(flag) {
+				dropflag = false;
+				for(var i = 1;i < num;i++) {
+					if(!rowJudge(i)) {
+						dropflag = true;
+						break;
+					}
+				}
+			}
+			else if(!flag) {
+				dropflag = false;
+			}
+		}
+		else if(!dropflag) {
+			by++; // ブロックを１マス落下
+			
+			var breakflag = false;
+			for(var i = 0;i < BLOCK_HEIGHT;i++) {
+				for(var j = 0;j < BLOCK_WIDTH;j++) {
+					if(bx + j < 0 || bx + j >= FIELD_WIDTH ||
+						by + i < 0 || by + i >= FIELD_HEIGHT) continue;
+					
+					if(field[by + i][bx + j] != 0 && block[btype][brot][i][j] == 1) {
+						by--;
+						bflag = true;
+						breakflag = true;
+						spd -= 0.2;
+						if(spd < 8) spd = 8;
+						break;
+					}
+				}
+				if(breakflag) break;
+			}
+		}
+	}
+}
+
+//	「何もない行」かどうか判定
+function rowJudge(num) {
+	var flag = true;
+	
+	for(var i = 1;i < FIELD_WIDTH - 1;i++) {
+		if(field[num][i] != 0) {
+			flag = false;
+			break;
+		}
+	}
+	
+	return flag;
+}
+
+//	落下ブロックの描画
+function drawBlock() {
+	var str;
+	switch(bcolor) {
+	case 1: str = BLOCK_RED_COLOR; break;
+	case 2: str = BLOCK_BLU_COLOR; break;
+	case 3: str = BLOCK_GRE_COLOR; break;
+	case 4: str = BLOCK_YEL_COLOR; break;
+	}
+	context.fillStyle = str; // 赤色に設定
+	
+	//	ブロックを描画
+	for(var i = 0;i < BLOCK_HEIGHT;i++) {
+		for(var j = 0;j < BLOCK_WIDTH;j++) {
+			if(block[btype][brot][i][j] == 1) {
+				context.fillRect(FIELD_X + (bx + j) * 25, FIELD_Y + (by + i) * 25, 25, 25);
+			}
+		}
+	}
+}
+
+//	落下ブロックの登録
+function enterBlock() {
+	if(!bflag) return;
+	
+	for(var i = 0;i < BLOCK_HEIGHT;i++) {
+		for(var j = 0;j < BLOCK_WIDTH;j++) {
+			if(bx + j < 0 || bx + j >= FIELD_WIDTH ||
+				by + i < 0 || by + i >= FIELD_HEIGHT) continue;
+			
+			//	ブロックが「０」なら処理しない
+			if(block[btype][brot][i][j] == 0) continue;
+			
+			//	ブロックをフィールドに登録
+			field[by + i][bx + j] = bcolor;
+		}
+	}
+	
+	deleteJudge();
+	
+	bflag = false;
+	bx = 4;
+	by = -4;
+	
+	btype = nbtype;
+	brot = nbrot;
+	bcolor = nbcolor;
+	nbtype = Math.floor(Math.random() * 7);
+	nbrot = Math.floor(Math.random() * 4);
+	nbcolor = Math.floor(Math.random() * 100);
+	if(nbcolor < 35)		nbcolor = 1; // 赤色 35%
+	else if(nbcolor < 65)	nbcolor = 2; // 青色 30%
+	else if(nbcolor < 85)	nbcolor = 3; // 緑色 20%
+	else					nbcolor = 4; // 黄色 15%
+}
+
+//	ブロック行の削除判定
+function deleteJudge() {
+	for(var i = 1;i < FIELD_HEIGHT - 1;i++) {
+		for(var j = 1;j < FIELD_WIDTH - 1;j++) {
+			if(field[i][j] != 0) {
+				delflag[i] = true;
+			}
+			else if(field[i][j] == 0) {
+				delflag[i] = false;
+				break;
+			}
+		}
+	}
+	
+	for(var i = 1;i < FIELD_HEIGHT - 1;i++) {
+		if(!delflag[i]) continue;
+		
+		if(!dropflag) {
+			dropflag = true;
+		}
+		
+		for(var j = 1;j < FIELD_WIDTH - 1;j++) {
+			switch(field[i][j]) {
+			case 1: score += BLOCK_RED_SCORE; delnum[0]++; break;
+			case 2: score += BLOCK_BLU_SCORE; delnum[1]++; break;
+			case 3: score += BLOCK_GRE_SCORE; delnum[2]++; break;
+			case 4: score += BLOCK_YEL_SCORE; delnum[3]++; break;
+			}
+		}
+		
+		//	ブロック行を削除
+		for(var j = 1;j < FIELD_WIDTH - 1;j++) field[i][j] = 0;
+	}
+	
+	//	delflag の初期化
+	for(var i = 0;i < FIELD_HEIGHT;i++) delflag[i] = false;
+}
+
+//	フィールド描画
+function drawField() {
+	for(var i = 0;i < FIELD_HEIGHT;i++) {
+		for(var j = 0;j < FIELD_WIDTH;j++) {
+			if(field[i][j] == 0) continue;
+			
+			//	１：赤色　２：青色　３：緑色　４：黄色　９：灰色　に設定
+			var str;
+			switch(field[i][j]) {
+			case 1: str = BLOCK_RED_COLOR; break;
+			case 2: str = BLOCK_BLU_COLOR; break;
+			case 3: str = BLOCK_GRE_COLOR; break;
+			case 4: str = BLOCK_YEL_COLOR; break;
+			case 9: str = "rgba(150, 150, 150, 1.0)"; break;
+			}
+			context.fillStyle = str;
+			
+			//	ブロック・壁を描画
+			context.fillRect(FIELD_X + j * 25, FIELD_Y + i * 25, 25, 25);
+		}
+	}
+}
+
+//	フィールド枠描画
+function drawFrame() {
+	context.fillStyle = "rgba(230, 230, 230, 1.0)"; // 白色に設定
+	
+	//	縦線を描画
+	for(var i = 0;i < FIELD_WIDTH + 1;i++) {
+		context.fillRect(FIELD_X + i * 25, FIELD_Y, 1, 25 * FIELD_HEIGHT);
+	}
+	
+	//	横線を描画
+	for(var i = 0;i < FIELD_HEIGHT + 1;i++) {
+		context.fillRect(FIELD_X, FIELD_Y + i * 25, 25 * FIELD_WIDTH, 1);
+	}
+}
+
+//	Nextブロック領域の描画
+function drawNextBlock() {
+	context.fillStyle = "rgba(230, 230, 230, 1.0)"; // 白色に設定
+	
+	context.fillRect(NEXT_FIELD_X,		NEXT_FIELD_Y,		150, 1);
+	context.fillRect(NEXT_FIELD_X,		NEXT_FIELD_Y + 150, 150, 1);
+	context.fillRect(NEXT_FIELD_X,		NEXT_FIELD_Y,		1, 150);
+	context.fillRect(NEXT_FIELD_X + 150,NEXT_FIELD_Y,		1, 150);
+	
+	//	１：赤色　２：青色　３：緑色　４：黄色　９：灰色　に設定
+	var str;
+	switch(nbcolor) {
+	case 1: str = BLOCK_RED_COLOR; break;
+	case 2: str = BLOCK_BLU_COLOR; break;
+	case 3: str = BLOCK_GRE_COLOR; break;
+	case 4: str = BLOCK_YEL_COLOR; break;
+	case 9: str = "rgba(150, 150, 150, 1.0)"; break;
+	}
+	context.fillStyle = str;
+	
+	for(var i = 0;i < BLOCK_HEIGHT;i++) {
+		for(var j = 0;j < BLOCK_WIDTH;j++) {
+			if(block[nbtype][nbrot][i][j] == 1) {
+				context.fillRect(NEXT_FIELD_X + 25 + j * 25, NEXT_FIELD_Y + 15 + 25 + i * 25, 25, 25);
+			}
+		}
+	}
+	context.fillStyle = "rgba(230, 230, 230, 1.0)";
+	for(var i = 0;i < BLOCK_HEIGHT;i++) {
+		for(var j = 0;j < BLOCK_WIDTH;j++) {
+			if(block[nbtype][nbrot][i][j] == 1) {
+				context.fillRect(NEXT_FIELD_X + 25 + j * 25,		NEXT_FIELD_Y + 15 + 25 + i * 25,		25, 1);
+				context.fillRect(NEXT_FIELD_X + 25 + j * 25,		NEXT_FIELD_Y + 15 + 25 + i * 25 + 25,	25, 1);
+				context.fillRect(NEXT_FIELD_X + 25 + j * 25, 		NEXT_FIELD_Y + 15 + 25 + i * 25,		1, 25);
+				context.fillRect(NEXT_FIELD_X + 25 + j * 25 + 25,	NEXT_FIELD_Y + 15 + 25 + i * 25,		1, 25);
+			}
+		}
+	}
+	
+	context.font = "bold 20px sans-serif";
+	context.fillText("Next", NEXT_FIELD_X + 50, 60);
+	context.fillRect(NEXT_FIELD_X, 70, 150, 1);
+}
+
+//	スコア・操作説明などの描画
+function drawScorePain() {
+	context.fillStyle = "rgba(230, 230, 230, 1.0)";
+	context.font = "bold 24px sans-serif";
+	
+	context.fillText("Score: " + score, SCORE_PAIN_X + 15, SCORE_PAIN_Y);
+	
+	for(var i = 0;i < 4;i++) {
+		var col, str;
+		switch(i) {
+		case 0: col = BLOCK_RED_COLOR; str = "(+3)   x "; break;
+		case 1: col = BLOCK_BLU_COLOR; str = "(+5)   x "; break;
+		case 2: col = BLOCK_GRE_COLOR; str = "(+10) x "; break;
+		case 3: col = BLOCK_YEL_COLOR; str = "(+15) x "; break;
+		}
+		context.fillStyle = col;
+		context.fillRect(SCORE_PAIN_X + 15, SCORE_PAIN_Y + 30 * (i + 1), 25, 25);
+		context.fillStyle = "rgba(230, 230, 230, 1.0)";
+		context.font = "bold 16px sans-serif";
+		context.fillText(str + delnum[i], SCORE_PAIN_X + 30 + 15, SCORE_PAIN_Y + 30 * (i + 1) + 18);
+	}
+	
+	context.fillStyle = "rgba(230, 230, 230, 1.0)";
+	context.font = "bold 18px sans-serif";
+	
+	context.fillText("←・→： 移動", SCORE_PAIN_X + 15, SCORE_PAIN_Y + 30 * 6);
+	context.fillText("↑・↓： 左・右回転", SCORE_PAIN_X + 15, SCORE_PAIN_Y + 30 * 7);
+	context.fillText("SPACE： 加速", SCORE_PAIN_X + 15, SCORE_PAIN_Y + 30 * 8);
+	
+	context.fillStyle = "rgba(230, 230, 230, 1.0)";
+	context.fillRect(SCORE_PAIN_X, SCORE_PAIN_Y - 30, 1, 290);
+	context.fillRect(SCORE_PAIN_X + 180, SCORE_PAIN_Y - 30, 1, 290);
+	context.fillRect(SCORE_PAIN_X, SCORE_PAIN_Y - 30, 180, 1);
+	context.fillRect(SCORE_PAIN_X, SCORE_PAIN_Y - 30 + 290, 180, 1);
+}
+
+document.addEventListener("keydown", e => { // キー押下処理
+	var keyCode = e.keyCode;
+	
+	switch(keyCode) {
+	case 39: key[KEY_RIGHT]++;	break;
+	case 37: key[KEY_LEFT]++;	break;
+	case 38: key[KEY_UP]++;		break;
+	case 40: key[KEY_DOWN]++;	break;
+	case 32: spdupflag = true; break;
+	case 13: if(scene == SCENE_TITLE) scene = SCENE_GAME;
+			 if(gameoverflag) init(); break;
+	}
+});
+
+document.addEventListener("keyup", e => { // キー離上処理
+	var keyCode = e.keyCode;
+	
+	switch(keyCode) {
+	case 39: key[KEY_RIGHT]	= 0; break;
+	case 37: key[KEY_LEFT]	= 0; break;
+	case 38: key[KEY_UP]	= 0; break;
+	case 40: key[KEY_DOWN]	= 0; break;
+	case 32: spdupflag = false; break;
+	}
+});
+
+init();
+requestAnimationFrame(main);
+function main() {
+	if(scene == SCENE_TITLE) {
+		context.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+		context.fillStyle = "rgba(230, 230, 230, 1.0)";
+		context.font = "bold 48px sans-serif";
+		context.fillText("テトリス", CANVAS_WIDTH / 3, CANVAS_HEIGHT / 3);
+		context.font = "bold 32px sans-serif";
+		context.fillText("はじめる（Enter）", CANVAS_WIDTH / 3, CANVAS_HEIGHT / 3 + 100);
+		if(bestscore == -1) {
+			context.fillText("最高スコア：ー", CANVAS_WIDTH / 3, CANVAS_HEIGHT / 3 + 200);
+		}
+		else {
+			context.fillText("最高スコア：" + bestscore, CANVAS_WIDTH / 3, CANVAS_HEIGHT / 3 + 200);
+		}
+	}
+	else if(scene == SCENE_GAME) {
+		context.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); // 画面クリア
+		
+		if(!gameoverflag) {
+			keyCtrl(); // キー操作
+			update(); // 更新
+			enterBlock(); // ブロックの登録
+		}
+		
+		drawBlock(); // ブロックの描画
+		drawField(); // フィールドの描画
+		drawFrame(); // フィールド枠の描画
+		drawNextBlock(); // Nextブロックの描画
+		drawScorePain(); // スコア領域の描画
+		
+		cnt++;
+		
+		for(var i = 0;i < FIELD_WIDTH;i++) {
+			if(field[0][i] != 0 && field[0][i] != 9) {
+				gameoverflag = true;
+				bestscore = (score > bestscore ? score : bestscore);
+				break;
+			}
+		}
+	}
+	
+	requestAnimationFrame(main);
+}
+</script>
+</body>
+</html>
